@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mis listas">
+<meta name="theme-color" content="#1f6f5c">
+<link rel="apple-touch-icon" id="icono" href="">
+<title>Mis listas</title>
+<style>
+:root{--bg:#f5f6f4;--panel:#fff;--ink:#1d2421;--mute:#69726d;--line:#dde1dc;--acc:#1f6f5c;--acc-ink:#fff;--sel:#dcebe6;--danger:#a63a2b;--warn:#b26a00;--done:#8a938e;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#161a18;--panel:#1e2421;--ink:#e8ece9;--mute:#9aa49e;--line:#323a36;--acc:#4fb79d;--acc-ink:#0e1512;--sel:#2c4a41;--danger:#e17b6b;--warn:#e0a458;--done:#6f7873;color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top)}
+header{padding:10px 18px 4px}
+h1{font-size:26px;margin:0;font-weight:700;line-height:1.15}
+.h1btn{font:inherit;color:inherit;background:none;border:0;padding:0;text-align:left}
+.sub{color:var(--mute);font-size:13px}
+main{flex:1;overflow-y:auto;padding:8px 14px 24px;-webkit-overflow-scrolling:touch}
+nav.tabs{display:flex;border-top:1px solid var(--line);background:var(--panel);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;border:0;background:none;padding:8px 0 6px;color:var(--mute);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button b{font-size:21px;font-weight:400;line-height:1}
+nav.tabs button.on{color:var(--acc);font-weight:600}
+button{font:inherit;color:inherit}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-height:44px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:0}
+textarea{min-height:96px;resize:vertical}
+.primary{background:var(--acc);color:var(--acc-ink);border:0;border-radius:10px;padding:11px 16px;font-weight:600;min-height:44px}
+.ghost{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-height:40px}
+.danger{color:var(--danger)}
+.wide{width:100%;margin-top:12px}
+.addbar{display:flex;gap:8px;margin:6px 0 10px}
+.tools{display:flex;gap:8px;margin-bottom:8px}
+.tools select{flex:1}
+.tools .ghost{width:48px;padding:0}
+.chipsrow{display:flex;gap:6px;overflow-x:auto;margin:8px 0 10px;padding-bottom:2px}
+.chipsrow button{flex:none;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 13px;font-size:14px}
+.chipsrow button.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.banner{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:10px;padding:10px 12px;margin:6px 0 8px;font-size:14px;width:100%;text-align:left}
+.banner.v{border-left-color:var(--danger)}
+.card{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.card.hecha .nm{text-decoration:line-through;color:var(--done)}
+.chk{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);background:none;color:transparent;font-size:15px;display:grid;place-items:center;padding:0;margin-top:1px}
+.card.hecha .chk{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.cb{flex:1;min-width:0}
+.nm{font-weight:600;word-break:break-word}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tg{font-size:12px;border-radius:6px;padding:2px 7px;background:var(--bg);color:var(--mute);border:1px solid var(--line);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tg.alta{color:var(--danger)}.tg.vencida{color:var(--danger);border-color:var(--danger)}.tg.pronto{color:var(--warn);border-color:var(--warn)}.tg.curso{color:var(--acc);border-color:var(--acc)}
+.tg a{color:var(--acc);text-decoration:none}
+.cr{font-size:12px;color:var(--mute);margin-top:5px}
+.empty{color:var(--mute);text-align:center;padding:36px 12px}
+/* calendario */
+.calnav{display:flex;align-items:center;gap:8px;margin:4px 0 8px}
+.calnav .t{flex:1;text-align:center;font-weight:700;font-size:18px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+.dh{text-align:center;font-size:12px;color:var(--mute);padding:4px 0}
+.day{border:0;background:none;border-radius:10px;min-height:50px;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.day span{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;font-size:15px}
+.day.fuera{color:var(--mute);opacity:.55}
+.day.hoy span{background:var(--acc);color:var(--acc-ink);font-weight:700}
+.day.sel{background:var(--sel)}
+.dots{display:flex;gap:3px;min-height:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--acc)}
+.dot.vencida{background:var(--danger)}.dot.pronto{background:var(--warn)}.dot.hecha{background:var(--done)}
+.dayh{font-weight:700;margin:16px 2px 8px}
+/* listas y datos */
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.row.cur{border-color:var(--acc);background:var(--sel)}
+.row .bt{display:flex;gap:6px;flex:none}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.box h3{margin:0 0 6px;font-size:16px}
+.box p{margin:0 0 10px;color:var(--mute);font-size:14px}
+.box .primary,.box .ghost{width:100%}
+/* ficha */
+#sheet,#visor{position:fixed;left:0;right:0;top:0;height:100dvh;background:var(--bg);z-index:20;display:flex;flex-direction:column;visibility:hidden;transform:translateY(100%);transition:transform .22s}
+#visor{z-index:25}
+#sheet.open,#visor.open{transform:none;visibility:visible}
+@media (prefers-reduced-motion:reduce){#sheet,#visor{transition:none}}
+.sh{flex:none;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 12px) 16px 10px;border-bottom:1px solid var(--line)}
+.sh b{font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh button{border:0;background:none;color:var(--acc);font-size:17px;padding:6px 2px}
+.sbody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px 16px 60px}
+.sfoot{flex:none;display:flex;gap:8px;padding:10px 16px calc(env(safe-area-inset-bottom) + 10px);border-top:1px solid var(--line);background:var(--bg)}
+.sfoot .primary{flex:2}.sfoot .ghost{flex:1}
+.sfoot a.ghost{text-align:center;text-decoration:none;color:inherit;display:grid;place-items:center}
+.vbody{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;display:flex;align-items:center;justify-content:center;background:var(--panel)}
+.vbody img{max-width:100%;max-height:100%;object-fit:contain}
+.vbody iframe{width:100%;height:100%;border:0;background:#fff}
+.vc{padding:24px;text-align:center;width:100%}.vn{font-weight:600;margin-bottom:14px;word-break:break-word}.vc audio{width:100%}
+#menu{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.4);display:none;align-items:flex-end}
+#menu.open{display:flex}
+#menu .hoja{background:var(--bg);width:100%;border-radius:16px 16px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom) + 16px);max-height:80dvh;overflow-y:auto}
+.card{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.tg.adj{color:var(--acc);border-color:var(--acc);background:none;font:inherit;font-size:12px}
+.f{margin-bottom:12px}
+.f label{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sub-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.sub-row .chk{width:24px;height:24px;font-size:13px}
+.sub-row.ok .chk{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.sub-row.ok .st{text-decoration:line-through;color:var(--done)}
+.sub-row .st{flex:1;word-break:break-word}
+.sub-row .x{border:0;background:none;color:var(--danger);font-size:20px;padding:4px 8px}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 76px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;max-width:90%;text-align:center}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header><h1 id="titulo"></h1><div class="sub" id="subtitulo"></div></header>
+<main id="main"></main>
+<nav class="tabs" id="tabs">
+  <button data-a="tab" data-v="tareas"><b>✓</b>Tareas</button>
+  <button data-a="tab" data-v="cal"><b>▦</b>Calendario</button>
+  <button data-a="tab" data-v="listas"><b>☰</b>Listas</button>
+  <button data-a="tab" data-v="datos"><b>⚙</b>Datos</button>
+</nav>
+<div id="sheet" role="dialog" aria-modal="true"></div>
+<div id="visor" role="dialog" aria-modal="true"></div>
+<div id="menu"></div>
+<div id="toast" role="status"></div>
+<input type="file" id="file" accept=".json,application/json,text/plain" hidden>
+<input type="file" id="adjin" accept="application/pdf,audio/*,image/*,.pdf,.mp3,.m4a,.wav,.heic" multiple hidden>
+
+<script>
+"use strict";
+const KEY = "mis_listas_v2";
+const ESTADOS = ["Pendiente", "En curso", "Hecha"], PRIO = ["Alta", "Media", "Baja"], AVISO = 3;
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const DIAS = ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+const DC = ["L","M","X","J","V","S","D"];
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+const pad = n => String(n).padStart(2, "0");
+const iso = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+const hoy = () => iso(new Date());
+const fmt = s => s ? s.split("-").reverse().join("/") : "";
+const fmtc = s => s ? s.slice(8) + "/" + s.slice(5, 7) : "";
+const limitePronto = () => { const d = new Date(); d.setDate(d.getDate() + AVISO); return iso(d); };
+
+/* ---------- datos (solo en este iPhone) ---------- */
+let memoria = null, avisoMemoria = false;
+function cargar() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if (d && Array.isArray(d.listas) && d.listas.length) return d;
+  } catch (e) { avisoMemoria = true; }
+  return { version: 1, listas: [{ id: uid(), nombre: "General", tareas: [] }] };
+}
+let D = cargar();
+function guardar() {
+  try { localStorage.setItem(KEY, JSON.stringify(D)); }
+  catch (e) { toast("No se pudo guardar. Haz una copia en Datos."); }
+}
+const now = new Date();
+const ui = { vista: "tareas", lista: D.listas[0].id, orden: "creada", dir: -1, filtro: "todas", q: "",
+             calAno: now.getFullYear(), calMes: now.getMonth(), calDia: hoy() };
+let sheet = null;
+
+const lista = () => D.listas.find(l => l.id === ui.lista) || (ui.lista = D.listas[0].id, D.listas[0]);
+function buscar(id) {
+  for (const l of D.listas) { const t = l.tareas.find(x => x.id === id); if (t) return { l, t }; }
+  return null;
+}
+function etiqueta(t) {
+  if (t.estado === "Hecha") return "hecha";
+  if (t.limite && t.limite < hoy()) return "vencida";
+  if (t.limite && t.limite <= limitePronto()) return "pronto";
+  return "";
+}
+function avisos() {
+  const venc = [], pronto = [];
+  D.listas.forEach(l => l.tareas.forEach(t => {
+    const e = etiqueta(t);
+    if (e === "vencida") venc.push({ l, t }); else if (e === "pronto") pronto.push({ l, t });
+  }));
+  return { venc, pronto };
+}
+function clave(t, c) {
+  switch (c) {
+    case "nombre": return (t.nombre || "").toLowerCase();
+    case "creada": return t.creada || "";
+    case "hito": return (t.hito || "").toLowerCase();
+    case "limite": return t.limite || "";
+    case "fin": return t.fin || "";
+    case "web": return (t.web || "").toLowerCase();
+    case "estado": return String(ESTADOS.indexOf(t.estado || "Pendiente"));
+    case "prioridad": return String(PRIO.indexOf(t.prioridad || "Media"));
+    case "adj": { const n = (t.adjuntos || []).length; return n ? String(n).padStart(4, "0") : ""; }
+  }
+  return "";
+}
+function urlWeb(w) {
+  if (/^https?:\/\//i.test(w)) return w;
+  if (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(w)) return "https://" + w;
+  return null;
+}
+function toast(m) {
+  const t = $("#toast"); t.textContent = m; t.classList.add("on");
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), 2600);
+}
+
+/* ---------- tarjetas ---------- */
+function card(x, conLista) {
+  const { l, t } = x, e = etiqueta(t), subs = t.subtareas || [];
+  const tg = [];
+  if (t.estado === "En curso") tg.push('<span class="tg curso">En curso</span>');
+  if (t.prioridad === "Alta") tg.push('<span class="tg alta">Prioridad alta</span>');
+  if (t.prioridad === "Baja") tg.push('<span class="tg">Prioridad baja</span>');
+  if (t.hito) tg.push('<span class="tg">⚑ ' + esc(t.hito) + "</span>");
+  if (t.limite) tg.push('<span class="tg ' + e + '">Límite ' + fmtc(t.limite) + "</span>");
+  if (t.fin) tg.push('<span class="tg">Finalizada ' + fmtc(t.fin) + "</span>");
+  if (subs.length) tg.push('<span class="tg">☑ ' + subs.filter(s => s.ok).length + "/" + subs.length + "</span>");
+  (t.adjuntos || []).forEach(a => tg.push(a.id
+    ? '<button class="tg adj" data-a="adjver" data-id="' + t.id + '" data-aid="' + a.id + '">' + iconoAdj(a) + " " + esc(a.nombre) + "</button>"
+    : '<span class="tg">' + iconoAdj(a) + " " + esc(a.nombre) + "</span>"));
+  if (t.web) { const u = urlWeb(t.web); tg.push('<span class="tg">' + (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t.web) + "</a>" : esc(t.web)) + "</span>"); }
+  if (conLista) tg.push('<span class="tg">' + esc(l.nombre) + "</span>");
+  return '<div class="card ' + (t.estado === "Hecha" ? "hecha" : "") + '" data-a="edit" data-id="' + t.id + '">' +
+    '<button class="chk" data-a="tog" data-id="' + t.id + '" aria-label="Marcar como hecha">✓</button>' +
+    '<div class="cb"><div class="nm">' + esc(t.nombre) + "</div>" +
+    (tg.length ? '<div class="meta">' + tg.join("") + "</div>" : "") +
+    '<div class="cr">Creada ' + fmt(t.creada) + "</div></div></div>";
+}
+
+/* ---------- vistas ---------- */
+function render() {
+  const main = $("#main"), st = main.scrollTop;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === ui.vista));
+  const v = ui.vista;
+  $("#titulo").innerHTML = v === "tareas" ? '<button class="h1btn" data-a="tab" data-v="listas">' + esc(lista().nombre) + " ▾</button>"
+    : v === "cal" ? "Calendario" : v === "listas" ? "Listas" : "Datos";
+  $("#subtitulo").textContent = "Guardado solo en este iPhone";
+  if (v === "tareas") vistaTareas(main);
+  else if (v === "cal") vistaCal(main);
+  else if (v === "listas") vistaListas(main);
+  else vistaDatos(main);
+  main.scrollTop = st;
+}
+
+function vistaTareas(main) {
+  const f = [["todas","Todas"],["pend","Pendientes"],["hechas","Hechas"],["avisos","Avisos"]];
+  main.innerHTML =
+    '<div id="banner"></div>' +
+    '<div class="addbar"><input id="rapida" placeholder="Nueva tarea…" enterkeyhint="done" autocapitalize="sentences"><button class="primary" data-a="rapida">Añadir</button></div>' +
+    '<div class="tools"><select id="orden" aria-label="Ordenar por">' +
+    [["creada","Cuándo se creó"],["nombre","Nombre de la tarea"],["hito","Hito"],["limite","Fecha límite"],["fin","Cuándo se finaliza"],["web","Web / asociado"],["estado","Estado"],["prioridad","Prioridad"],["adj","Adjuntos"]]
+      .map(o => '<option value="' + o[0] + '"' + (ui.orden === o[0] ? " selected" : "") + ">Ordenar: " + o[1] + "</option>").join("") +
+    '</select><button class="ghost" data-a="dir" aria-label="Invertir orden">' + (ui.dir === 1 ? "▲" : "▼") + "</button></div>" +
+    '<input id="q" type="search" placeholder="Buscar" value="' + esc(ui.q) + '">' +
+    '<div class="chipsrow">' + f.map(x => '<button data-a="filtro" data-v="' + x[0] + '" class="' + (ui.filtro === x[0] ? "on" : "") + '">' + x[1] + "</button>").join("") + "</div>" +
+    '<div id="cards"></div>';
+  renderBanner(); renderCards();
+}
+function renderBanner() {
+  const b = $("#banner"); if (!b) return;
+  const a = avisos(), n = a.venc.length, p = a.pronto.length;
+  if (!n && !p) { b.innerHTML = ""; return; }
+  const txt = [n ? n + (n === 1 ? " vencida" : " vencidas") : "", p ? p + (p === 1 ? " vence" : " vencen") + " en " + AVISO + " días o menos" : ""].filter(Boolean).join(" · ");
+  b.innerHTML = '<button class="banner ' + (n ? "v" : "") + '" data-a="filtro" data-v="avisos">⚠ ' + txt + " — toca para verlas</button>";
+}
+function renderCards() {
+  const c = $("#cards"); if (!c) return;
+  const q = ui.q.trim().toLowerCase(), av = ui.filtro === "avisos";
+  let items = av ? [...avisos().venc, ...avisos().pronto] : lista().tareas.map(t => ({ l: lista(), t }));
+  items = items.filter(({ t }) => {
+    if (ui.filtro === "pend" && t.estado === "Hecha") return false;
+    if (ui.filtro === "hechas" && t.estado !== "Hecha") return false;
+    if (q && ![t.nombre, t.hito, t.web, t.notas, ...(t.adjuntos || []).map(a => a.nombre)].join(" ").toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const k = x => clave(x.t, ui.orden);
+  const vac = items.filter(x => k(x) === ""), ok = items.filter(x => k(x) !== "");
+  ok.sort((a, b) => { const x = k(a), y = k(b); return (x < y ? -1 : x > y ? 1 : 0) * ui.dir; });
+  const todo = [...ok, ...vac];
+  c.innerHTML = todo.length ? todo.map(x => card(x, av)).join("")
+    : '<div class="empty">' + (av ? "No hay tareas vencidas ni a punto de vencer." : lista().tareas.length ? "Ninguna tarea coincide con el filtro." : "Aún no hay tareas. Escribe la primera arriba.") + "</div>";
+}
+
+function vistaCal(main) {
+  const por = {};
+  D.listas.forEach(l => l.tareas.forEach(t => { if (t.limite) (por[t.limite] = por[t.limite] || []).push({ l, t }); }));
+  const off = (new Date(ui.calAno, ui.calMes, 1).getDay() + 6) % 7;
+  const dim = new Date(ui.calAno, ui.calMes + 1, 0).getDate();
+  const semanas = Math.ceil((off + dim) / 7);
+  let celdas = DC.map(d => '<div class="dh">' + d + "</div>").join("");
+  for (let i = 0; i < semanas * 7; i++) {
+    const d = new Date(ui.calAno, ui.calMes, 1 - off + i), k = iso(d), ts = por[k] || [];
+    const dots = ts.slice(0, 4).map(({ t }) => '<i class="dot ' + etiqueta(t) + '"></i>').join("");
+    celdas += '<button class="day ' + (d.getMonth() !== ui.calMes ? "fuera " : "") + (k === hoy() ? "hoy " : "") + (k === ui.calDia ? "sel" : "") +
+      '" data-a="calsel" data-iso="' + k + '"><span>' + d.getDate() + '</span><div class="dots">' + dots + "</div></button>";
+  }
+  const dd = new Date(ui.calDia + "T00:00:00"), delDia = por[ui.calDia] || [];
+  delDia.sort((a, b) => (a.t.estado === "Hecha") - (b.t.estado === "Hecha"));
+  main.innerHTML =
+    '<div class="calnav"><button class="ghost" data-a="calmes" data-d="-1" aria-label="Mes anterior">◀</button>' +
+    '<div class="t">' + MESES[ui.calMes][0].toUpperCase() + MESES[ui.calMes].slice(1) + " " + ui.calAno + "</div>" +
+    '<button class="ghost" data-a="calmes" data-d="1" aria-label="Mes siguiente">▶</button>' +
+    '<button class="ghost" data-a="calhoy">Hoy</button></div>' +
+    '<div class="calgrid">' + celdas + "</div>" +
+    '<div class="dayh">' + DIAS[(dd.getDay() + 6) % 7][0].toUpperCase() + DIAS[(dd.getDay() + 6) % 7].slice(1) + ", " + dd.getDate() + " de " + MESES[dd.getMonth()] + " de " + dd.getFullYear() + "</div>" +
+    (delDia.length ? delDia.map(x => card(x, true)).join("") : '<div class="empty" style="padding:14px">No hay tareas con fecha límite este día.</div>') +
+    '<button class="primary wide" data-a="nueva" data-iso="' + ui.calDia + '">Nueva tarea para este día</button>';
+}
+
+function vistaListas(main) {
+  main.innerHTML = '<div>' + D.listas.map(l => {
+    const pend = l.tareas.filter(t => t.estado !== "Hecha").length;
+    return '<div class="row ' + (l.id === ui.lista ? "cur" : "") + '" data-a="lsel" data-id="' + l.id + '"><div><b>' + esc(l.nombre) +
+      '</b><div class="sub">' + pend + " pendientes de " + l.tareas.length + '</div></div><div class="bt">' +
+      '<button class="ghost" data-a="lren" data-id="' + l.id + '">Renombrar</button>' +
+      '<button class="ghost danger" data-a="ldel" data-id="' + l.id + '">Borrar</button></div></div>';
+  }).join("") + '</div><button class="primary wide" data-a="lnueva">Nueva lista</button>' +
+  '<p class="sub" style="margin-top:14px">Para mover una tarea a otra lista, ábrela y cambia el campo «Lista», o mantenla pulsada en la lista de tareas.</p>';
+}
+
+function vistaDatos(main) {
+  const ult = localStorage.getItem(KEY + "_copia");
+  main.innerHTML =
+    '<div class="box"><h3>Copia de seguridad</h3><p>' + (ult ? "Última copia: " + esc(ult) + "." : "Aún no has hecho ninguna copia.") +
+    ' Elige «Guardar en Archivos» o envíala a tu ordenador.</p>' +
+    '<button class="primary" data-a="exp_json">Copia de las tareas (.json)</button>' +
+    '<button class="ghost wide" data-a="exp_full">Copia completa con archivos adjuntos</button></div>' +
+    '<div class="box"><h3>Cargar copia</h3><p>Sirve para recuperar tus datos. Sustituye lo que hay ahora. También acepta el archivo mis_listas.json de Windows (los adjuntos de Windows no pasan al iPhone, solo sus nombres).</p><button class="ghost" data-a="imp">Cargar copia…</button></div>' +
+    '<div class="box"><h3>Exportar a Excel</h3><p>Genera un archivo .csv con todas las tareas de todas las listas.</p><button class="ghost" data-a="exp_csv">Exportar a CSV</button></div>' +
+    '<div class="box"><h3>Privacidad y espacio</h3><p>Tus tareas y archivos se guardan únicamente en este iPhone. No se envían a ningún servidor ni a la nube. Si borras los datos de Safari o desinstalas la aplicación, se pierden: haz copias.</p><p id="uso" class="sub"></p></div>';
+  if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(e => {
+    const u = $("#uso"); if (u && e.usage != null) u.textContent = "Espacio usado por la aplicación: " + tam(e.usage) + (e.quota ? " de unos " + tam(e.quota) + " disponibles." : ".");
+  }).catch(() => {});
+}
+
+/* ---------- ficha de tarea ---------- */
+function abrirFicha(id, pre) {
+  pre = pre || {};
+  const f = id ? buscar(id) : null;
+  const t = f ? f.t : { nombre: "", estado: "Pendiente", prioridad: "Media", hito: "", limite: pre.limite || "", fin: "", web: "", notas: "", subtareas: [], creada: hoy() };
+  sheet = { id: id, subs: (t.subtareas || []).map(s => ({ t: s.t, ok: !!s.ok })),
+            adj: (t.adjuntos || []).map(a => Object.assign({}, a)), adjOrig: (t.adjuntos || []).map(a => a.id).filter(Boolean) };
+  const opt = (arr, v) => arr.map(o => '<option' + (o === v ? " selected" : "") + ">" + o + "</option>").join("");
+  $("#sheet").innerHTML =
+    '<div class="sh"><b>' + (id ? "Editar tarea" : "Nueva tarea") + '</b><button data-a="s_cancel" aria-label="Cerrar">✕</button></div><div class="sbody" id="sbody">' +
+    '<div class="f"><label for="s_nombre">Tarea</label><input id="s_nombre" value="' + esc(t.nombre) + '" autocapitalize="sentences"></div>' +
+    '<div class="g2"><div class="f"><label for="s_estado">Estado</label><select id="s_estado">' + opt(ESTADOS, t.estado) + '</select></div>' +
+    '<div class="f"><label for="s_prio">Prioridad</label><select id="s_prio">' + opt(PRIO, t.prioridad) + "</select></div></div>" +
+    '<div class="f"><label for="s_hito">Hito</label><input id="s_hito" value="' + esc(t.hito) + '"></div>' +
+    '<div class="g2"><div class="f"><label for="s_limite">Fecha límite</label><input id="s_limite" type="date" value="' + esc(t.limite) + '"></div>' +
+    '<div class="f"><label for="s_fin">Finalizada</label><input id="s_fin" type="date" value="' + esc(t.fin) + '"></div></div>' +
+    '<div class="f"><label for="s_web">Web / asociado</label><input id="s_web" value="' + esc(t.web) + '" autocapitalize="none" autocorrect="off"></div>' +
+    '<div class="f"><label for="s_lista">Lista</label><select id="s_lista">' +
+      D.listas.map(l => '<option value="' + l.id + '"' + ((f ? f.l.id : ui.lista) === l.id ? " selected" : "") + ">" + esc(l.nombre) + "</option>").join("") + "</select></div>" +
+    '<div class="f"><label for="s_notas">Notas</label><textarea id="s_notas">' + esc(t.notas) + "</textarea></div>" +
+    '<div class="f"><label>Subtareas</label><div id="sublist"></div>' +
+    '<div class="addbar" style="margin-top:8px"><input id="s_sub" placeholder="Añadir subtarea…" enterkeyhint="done"><button class="ghost" data-a="sub_add">Añadir</button></div></div>' +
+    '<div class="f"><label>Archivos adjuntos (PDF, audio, fotos)</label><div id="adjlist"></div>' +
+    '<button class="ghost wide" data-a="adj_add" style="margin-top:8px">Añadir archivo…</button></div>' +
+    '<div class="sub">Creada ' + fmt(t.creada) + "</div></div>" +
+    '<div class="sfoot">' + (id ? '<button class="ghost danger" data-a="s_del">Borrar</button>' : "") +
+    '<button class="ghost" data-a="s_cancel">Cancelar</button><button class="primary" data-a="s_save">Guardar</button></div>';
+  pintarSubs(); pintarAdj();
+  $("#sheet").classList.add("open");
+  $("#sbody").scrollTop = 0;
+  if (!id) setTimeout(() => $("#s_nombre").focus(), 250);
+}
+function pintarSubs() {
+  $("#sublist").innerHTML = sheet.subs.map((s, i) =>
+    '<div class="sub-row ' + (s.ok ? "ok" : "") + '"><button class="chk" data-a="sub_tog" data-i="' + i + '" aria-label="Marcar subtarea">✓</button>' +
+    '<span class="st">' + esc(s.t) + '</span><button class="x" data-a="sub_del" data-i="' + i + '" aria-label="Quitar subtarea">×</button></div>').join("");
+}
+function pintarAdj() {
+  $("#adjlist").innerHTML = sheet.adj.length ? sheet.adj.map((a, i) =>
+    '<div class="sub-row"><span>' + iconoAdj(a) + '</span><span class="st">' + esc(a.nombre) +
+    (a._file ? ' <span class="sub">(se guarda al pulsar Guardar)</span>' : "") + "</span>" +
+    (a.id ? '<button class="ghost" data-a="adj_open" data-i="' + i + '">Abrir</button>' : "") +
+    '<button class="x" data-a="adj_del" data-i="' + i + '" aria-label="Quitar archivo">×</button></div>').join("")
+    : '<div class="sub">Sin archivos.</div>';
+}
+function cerrarFicha() { $("#sheet").classList.remove("open"); sheet = null; if (document.activeElement) document.activeElement.blur(); }
+async function guardarFicha() {
+  const nombre = $("#s_nombre").value.trim();
+  if (!nombre) { toast("Escribe el nombre de la tarea"); $("#s_nombre").focus(); return; }
+  const pend = $("#s_sub").value.trim();
+  if (pend) sheet.subs.push({ t: pend, ok: false });
+  let estado = $("#s_estado").value, fin = $("#s_fin").value;
+  if (fin && estado !== "Hecha") estado = "Hecha";
+  if (estado === "Hecha" && !fin) fin = hoy();
+  if (estado !== "Hecha") fin = "";
+  if (sheet.guardando) return;
+  sheet.guardando = true;
+  try {
+    for (const a of sheet.adj) if (a._file) await dbPut(a.id, a._file);
+    for (const oid of sheet.adjOrig) if (!sheet.adj.some(x => x.id === oid)) await dbDel(oid);
+  } catch (e) { sheet.guardando = false; toast("No se pudo guardar un archivo (¿poco espacio?)"); return; }
+  const adjuntos = sheet.adj.map(a => { const r = Object.assign({}, a); delete r._file; return r; });
+  const datos = { nombre, estado, prioridad: $("#s_prio").value, hito: $("#s_hito").value.trim(), limite: $("#s_limite").value, fin,
+                  web: $("#s_web").value.trim(), notas: $("#s_notas").value.trim(), subtareas: sheet.subs, adjuntos };
+  const dest = D.listas.find(l => l.id === $("#s_lista").value) || lista();
+  if (sheet.id) {
+    const f = buscar(sheet.id); Object.assign(f.t, datos);
+    if (f.l !== dest) { f.l.tareas = f.l.tareas.filter(x => x !== f.t); dest.tareas.push(f.t); toast("Tarea movida a «" + dest.nombre + "»"); }
+  } else dest.tareas.push(Object.assign({ id: uid(), creada: hoy() }, datos));
+  guardar(); cerrarFicha(); render();
+}
+
+/* ---------- archivos ---------- */
+async function entregar(nombre, texto, mime) {
+  const blob = new Blob([texto], { type: mime });
+  try {
+    const file = new File([blob], nombre, { type: mime });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return true; }
+  } catch (e) { if (e && e.name === "AbortError") return false; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  return true;
+}
+async function copiaJson() {
+  if (await entregar("mis_listas_" + hoy() + ".json", JSON.stringify(D, null, 1), "application/json")) {
+    localStorage.setItem(KEY + "_copia", fmt(hoy())); render(); toast("Copia lista");
+  }
+}
+function csv() {
+  const c = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const filas = [["Lista","Tarea","Estado","Prioridad","Creada","Hito","Fecha límite","Finalizada","Web / asociado","Subtareas","Adjuntos","Notas"]];
+  D.listas.forEach(l => l.tareas.forEach(t => filas.push([l.nombre, t.nombre, t.estado, t.prioridad, fmt(t.creada), t.hito, fmt(t.limite), fmt(t.fin), t.web,
+    (t.subtareas || []).map(s => (s.ok ? "[x] " : "[ ] ") + s.t).join(" | "), (t.adjuntos || []).map(a => a.nombre).join(" | "), t.notas])));
+  return "\ufeff" + filas.map(f => f.map(c).join(";")).join("\r\n");
+}
+$("#file").addEventListener("change", e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const r = new FileReader();
+  r.onload = async () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!d || !Array.isArray(d.listas) || !d.listas.length) throw 0;
+      if (!confirm("Esto reemplazará las tareas actuales por las del archivo. ¿Continuar?")) return;
+      const arch = d._archivos || {}; delete d._archivos;
+      d.listas.forEach(l => { l.id = l.id || uid(); l.tareas = l.tareas || []; l.tareas.forEach(t => { t.id = t.id || uid(); t.subtareas = t.subtareas || []; t.adjuntos = t.adjuntos || []; }); });
+      try { await dbClear(); for (const id in arch) await dbPut(id, deB64(arch[id].d, arch[id].t)); }
+      catch (_) { toast("Se cargaron las tareas, pero no todos los archivos"); }
+      D = d; ui.lista = D.listas[0].id; guardar(); render(); toast("Copia cargada");
+    } catch (_) { toast("El archivo no es una copia válida"); }
+  };
+  r.readAsText(f);
+});
+
+/* ---------- archivos adjuntos (guardados en este iPhone, en IndexedDB) ---------- */
+let _db = null;
+function db() {
+  if (!_db) _db = new Promise((res, rej) => {
+    const r = indexedDB.open("mis_listas_adj", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("f");
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+  return _db;
+}
+async function dbOp(modo, fn) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const tx = d.transaction("f", modo), rq = fn(tx.objectStore("f"));
+    tx.oncomplete = () => res(rq ? rq.result : undefined); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+  });
+}
+const dbPut = (id, blob) => dbOp("readwrite", s => s.put(blob, id));
+const dbGet = id => dbOp("readonly", s => s.get(id));
+const dbDel = id => dbOp("readwrite", s => s.delete(id));
+const dbClear = () => dbOp("readwrite", s => s.clear());
+function borrarAdjDe(t) { (t.adjuntos || []).forEach(a => { if (a.id) dbDel(a.id).catch(() => {}); }); }
+function tipoAdj(a) {
+  const n = (a.nombre || "").toLowerCase(), t = a.tipo || "";
+  if (t === "application/pdf" || n.endsWith(".pdf")) return "PDF";
+  if (t.startsWith("audio/") || /\.(mp3|m4a|wav|aac|ogg|flac|opus|wma)$/.test(n)) return "Audio";
+  if (t.startsWith("image/") || /\.(jpe?g|png|gif|webp|heic|bmp|tiff?)$/.test(n)) return "Foto";
+  return "Archivo";
+}
+const iconoAdj = a => ({ PDF: "📄", Audio: "🎵", Foto: "🖼️", Archivo: "📎" })[tipoAdj(a)];
+const tam = n => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+const aB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = () => rej(r.error); r.readAsDataURL(b); });
+function deB64(b64, tipo) { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: tipo || "application/octet-stream" }); }
+
+let visorUrl = null, visorBlob = null;
+function verBlob(a, blob) {
+  if (!blob) { toast("Este archivo no está guardado en este iPhone"); return; }
+  cerrarVisor();
+  visorUrl = URL.createObjectURL(blob); visorBlob = { a, blob };
+  const tp = tipoAdj(a); let cuerpo;
+  if (tp === "Foto") cuerpo = '<img src="' + visorUrl + '" alt="' + esc(a.nombre) + '">';
+  else if (tp === "Audio") cuerpo = '<div class="vc"><div class="vn">🎵 ' + esc(a.nombre) + '</div><audio controls src="' + visorUrl + '"></audio></div>';
+  else if (tp === "PDF") cuerpo = '<iframe src="' + visorUrl + '" title="' + esc(a.nombre) + '"></iframe>';
+  else cuerpo = '<div class="vc"><div class="vn">📎 ' + esc(a.nombre) + '</div><p class="sub">Este tipo de archivo no se puede mostrar aquí. Usa «Compartir / guardar».</p></div>';
+  $("#visor").innerHTML = '<div class="sh"><b>' + esc(a.nombre) + '</b><button data-a="v_cerrar">Cerrar</button></div><div class="vbody">' + cuerpo + "</div>" +
+    '<div class="sfoot">' + (tp === "PDF" ? '<a class="ghost" target="_blank" rel="noopener" href="' + visorUrl + '">PDF completo</a>' : "") +
+    '<button class="primary" data-a="v_share">Compartir / guardar</button></div>';
+  $("#visor").classList.add("open");
+}
+function cerrarVisor() {
+  const au = $("#visor audio"); if (au) au.pause();
+  $("#visor").classList.remove("open"); $("#visor").innerHTML = "";
+  if (visorUrl) { URL.revokeObjectURL(visorUrl); visorUrl = null; }
+  visorBlob = null;
+}
+async function compartirAdj() {
+  if (!visorBlob) return;
+  const { a, blob } = visorBlob, file = new File([blob], a.nombre, { type: blob.type || a.tipo || "application/octet-stream" });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; } }
+  catch (e) { if (e && e.name === "AbortError") return; }
+  const x = document.createElement("a"); x.href = visorUrl; x.download = a.nombre; document.body.appendChild(x); x.click(); x.remove();
+}
+async function copiaCompleta() {
+  toast("Preparando copia…");
+  const arch = {};
+  try {
+    for (const l of D.listas) for (const t of l.tareas) for (const a of (t.adjuntos || [])) {
+      if (!a.id) continue;
+      const b = await dbGet(a.id); if (b) arch[a.id] = { t: b.type || a.tipo || "", d: await aB64(b) };
+    }
+  } catch (e) { toast("No se pudieron leer los archivos"); return; }
+  if (await entregar("mis_listas_completa_" + hoy() + ".json", JSON.stringify(Object.assign({}, D, { _archivos: arch })), "application/json")) {
+    localStorage.setItem(KEY + "_copia", fmt(hoy())); render(); toast("Copia completa lista");
+  }
+}
+$("#adjin").addEventListener("change", e => {
+  const fs = [...e.target.files]; e.target.value = ""; if (!sheet) return;
+  fs.forEach(f => {
+    if (f.size > 100 * 1048576 && !confirm("«" + f.name + "» pesa " + tam(f.size) + ". ¿Añadirlo igualmente?")) return;
+    sheet.adj.push({ id: uid(), nombre: f.name, tipo: f.type, tam: f.size, _file: f });
+  });
+  pintarAdj();
+});
+
+/* ---------- mantener pulsada una tarea: moverla a otra lista ---------- */
+let lpTimer = null, lpXY = [0, 0], lpHecho = 0;
+function menuMover(id) {
+  const f = buscar(id); if (!f) return;
+  const otras = D.listas.filter(l => l !== f.l);
+  $("#menu").innerHTML = '<div class="hoja"><div class="dayh" style="margin-top:0">' + esc(f.t.nombre) + "</div>" +
+    (otras.length ? '<div class="sub">Mover a la lista:</div>' + otras.map(l => '<button class="ghost wide" data-a="mover" data-id="' + id + '" data-l="' + l.id + '">' + esc(l.nombre) + "</button>").join("")
+      : '<div class="sub">No hay otras listas. Crea una en «Listas».</div>') +
+    '<button class="ghost wide" data-a="menu_cerrar">Cancelar</button></div>';
+  $("#menu").classList.add("open");
+}
+const cerrarMenu = () => $("#menu").classList.remove("open");
+document.addEventListener("pointerdown", e => {
+  clearTimeout(lpTimer);
+  if (e.target.closest("button, a, input, select, textarea")) return;
+  const c = e.target.closest(".card"); if (!c) return;
+  lpXY = [e.clientX, e.clientY];
+  lpTimer = setTimeout(() => { lpHecho = Date.now(); menuMover(c.dataset.id); }, 550);
+});
+document.addEventListener("pointermove", e => { if (lpTimer && Math.abs(e.clientX - lpXY[0]) + Math.abs(e.clientY - lpXY[1]) > 10) { clearTimeout(lpTimer); lpTimer = null; } });
+["pointerup", "pointercancel"].forEach(t => document.addEventListener(t, () => { clearTimeout(lpTimer); lpTimer = null; }));
+document.addEventListener("scroll", () => { clearTimeout(lpTimer); lpTimer = null; }, true);
+document.addEventListener("contextmenu", e => { if (e.target.closest(".card")) e.preventDefault(); });
+
+/* ---------- ficha: que el campo enfocado quede a la vista aunque salga el teclado ---------- */
+document.addEventListener("focusin", e => {
+  if (e.target.closest && e.target.closest("#sbody")) setTimeout(() => { try { e.target.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (_) {} }, 320);
+});
+if (window.visualViewport) {
+  const vv = window.visualViewport, aj = () => { const s = $("#sheet"); s.style.height = vv.height + "px"; s.style.top = vv.offsetTop + "px"; };
+  vv.addEventListener("resize", aj); vv.addEventListener("scroll", aj);
+}
+
+/* ---------- acciones ---------- */
+function act(a, d) {
+  switch (a) {
+    case "tab": ui.vista = d.v; render(); break;
+    case "tog": { const f = buscar(d.id); if (!f) break;
+      if (f.t.estado === "Hecha") { f.t.estado = "Pendiente"; f.t.fin = ""; } else { f.t.estado = "Hecha"; f.t.fin = hoy(); }
+      guardar(); render(); break; }
+    case "edit": abrirFicha(d.id); break;
+    case "nueva": abrirFicha(null, { limite: d.iso }); break;
+    case "rapida": { const i = $("#rapida"), v = i.value.trim(); if (!v) { i.focus(); break; }
+      lista().tareas.push({ id: uid(), creada: hoy(), nombre: v, estado: "Pendiente", prioridad: "Media", hito: "", limite: "", fin: "", web: "", notas: "", subtareas: [] });
+      guardar(); i.value = ""; renderBanner(); renderCards(); i.focus(); break; }
+    case "dir": ui.dir = -ui.dir; render(); break;
+    case "filtro": ui.filtro = d.v; ui.vista = "tareas"; render(); break;
+    case "calsel": { const dt = new Date(d.iso + "T00:00:00"); ui.calDia = d.iso; ui.calAno = dt.getFullYear(); ui.calMes = dt.getMonth(); render(); break; }
+    case "calmes": { const m = ui.calMes + Number(d.d); ui.calAno += Math.floor(m / 12); ui.calMes = ((m % 12) + 12) % 12;
+      const h = new Date(); ui.calDia = (h.getFullYear() === ui.calAno && h.getMonth() === ui.calMes) ? hoy() : iso(new Date(ui.calAno, ui.calMes, 1)); render(); break; }
+    case "calhoy": { const h = new Date(); ui.calAno = h.getFullYear(); ui.calMes = h.getMonth(); ui.calDia = hoy(); render(); break; }
+    case "lsel": ui.lista = d.id; ui.vista = "tareas"; ui.filtro = "todas"; render(); break;
+    case "lnueva": { const n = (prompt("Nombre de la nueva lista") || "").trim(); if (!n) break;
+      const l = { id: uid(), nombre: n, tareas: [] }; D.listas.push(l); ui.lista = l.id; guardar(); render(); break; }
+    case "lren": { const l = D.listas.find(x => x.id === d.id); const n = (prompt("Nuevo nombre de la lista", l.nombre) || "").trim();
+      if (n) { l.nombre = n; guardar(); render(); } break; }
+    case "ldel": { if (D.listas.length <= 1) { toast("Debe quedar al menos una lista"); break; }
+      const l = D.listas.find(x => x.id === d.id);
+      if (confirm("¿Borrar la lista «" + l.nombre + "» y sus " + l.tareas.length + " tareas?")) {
+        l.tareas.forEach(borrarAdjDe); D.listas = D.listas.filter(x => x !== l); if (ui.lista === l.id) ui.lista = D.listas[0].id; guardar(); render(); } break; }
+    case "exp_json": copiaJson(); break;
+    case "exp_csv": entregar("mis_listas_" + hoy() + ".csv", csv(), "text/csv"); break;
+    case "imp": $("#file").click(); break;
+    case "adj_add": $("#adjin").click(); break;
+    case "adj_open": { const a = sheet.adj[d.i]; if (!a) break;
+      (a._file ? Promise.resolve(a._file) : dbGet(a.id)).then(b => verBlob(a, b)).catch(() => toast("No se pudo abrir el archivo")); break; }
+    case "adj_del": sheet.adj.splice(Number(d.i), 1); pintarAdj(); break;
+    case "adjver": { const f = buscar(d.id), a = f && (f.t.adjuntos || []).find(x => x.id === d.aid); if (!a) break;
+      dbGet(a.id).then(b => verBlob(a, b)).catch(() => toast("No se pudo abrir el archivo")); break; }
+    case "v_cerrar": cerrarVisor(); break;
+    case "v_share": compartirAdj(); break;
+    case "exp_full": copiaCompleta(); break;
+    case "menu_cerrar": cerrarMenu(); break;
+    case "mover": { const f = buscar(d.id), dest = D.listas.find(l => l.id === d.l); cerrarMenu();
+      if (f && dest && f.l !== dest) { f.l.tareas = f.l.tareas.filter(x => x !== f.t); dest.tareas.push(f.t); guardar(); render(); toast("Tarea movida a «" + dest.nombre + "»"); } break; }
+    case "s_cancel": cerrarFicha(); break;
+    case "s_save": guardarFicha(); break;
+    case "s_del": { const f = buscar(sheet.id);
+      if (f && confirm("¿Borrar la tarea «" + f.t.nombre + "»?" + ((f.t.adjuntos || []).length ? "\n\nTambién se borrarán sus archivos adjuntos." : ""))) { f.l.tareas = f.l.tareas.filter(x => x !== f.t); borrarAdjDe(f.t); guardar(); cerrarFicha(); render(); } break; }
+    case "sub_add": { const i = $("#s_sub"), v = i.value.trim(); if (v) { sheet.subs.push({ t: v, ok: false }); i.value = ""; pintarSubs(); } i.focus(); break; }
+    case "sub_tog": sheet.subs[d.i].ok = !sheet.subs[d.i].ok; pintarSubs(); break;
+    case "sub_del": sheet.subs.splice(Number(d.i), 1); pintarSubs(); break;
+  }
+}
+document.addEventListener("click", e => {
+  if (Date.now() - lpHecho < 700) return;
+  if (e.target.id === "menu") { cerrarMenu(); return; }
+  if (e.target.closest("a")) return;
+  const b = e.target.closest("[data-a]"); if (!b) return;
+  act(b.dataset.a, b.dataset);
+});
+document.addEventListener("input", e => { if (e.target.id === "q") { ui.q = e.target.value; renderCards(); } });
+document.addEventListener("change", e => {
+  if (e.target.id === "orden") { ui.orden = e.target.value; renderCards(); }
+  if (e.target.id === "s_estado") {
+    const fin = $("#s_fin");
+    if (e.target.value === "Hecha") { if (!fin.value) fin.value = hoy(); } else fin.value = "";
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  if (e.target.id === "rapida") act("rapida", {});
+  if (e.target.id === "s_sub") { e.preventDefault(); act("sub_add", {}); }
+});
+
+/* ---------- arranque ---------- */
+(function icono() {
+  try {
+    const c = document.createElement("canvas"); c.width = c.height = 180;
+    const x = c.getContext("2d"); x.fillStyle = "#1f6f5c"; x.fillRect(0, 0, 180, 180);
+    x.strokeStyle = "#fff"; x.lineWidth = 18; x.lineCap = x.lineJoin = "round";
+    x.beginPath(); x.moveTo(48, 94); x.lineTo(80, 126); x.lineTo(134, 58); x.stroke();
+    $("#icono").href = c.toDataURL("image/png");
+  } catch (e) {}
+})();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+render();
+if (avisoMemoria) toast("Atención: no se pudo leer el almacenamiento del navegador");
+const ios = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = navigator.standalone === true;
+if (ios && !standalone && !localStorage.getItem(KEY + "_hint")) {
+  setTimeout(() => { toast("Toca Compartir y «Añadir a pantalla de inicio»"); try { localStorage.setItem(KEY + "_hint", "1"); } catch (e) {} }, 1200);
+}
+</script>
+</body>
+</html>
